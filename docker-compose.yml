@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # マネージャーサービス (変更なし)
+  yolo-manager:
+    build: ./manager
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /sys/class/power_supply:/sys/class/power_supply:ro
+    depends_on: []
+
+  # フルパワー用YOLOサービス (Jetson向けに修正)
+  yolo-full-power:
+    build: ./yolo-full-power
+    deploy:
+      replicas: 0
+    # ここが最重要！ NVIDIA Container Runtimeを指定してGPUを有効化
+    runtime: nvidia
+    # GUI表示が必要な場合
+    environment:
+      - DISPLAY=$DISPLAY
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+
+  # 省電力用YOLOサービス (変更なし)
+  yolo-power-save:
+    build: ./yolo-power-save
+    deploy:
+      replicas: 0
+    # GUI表示が必要な場合
+    environment:
+      - DISPLAY=$DISPLAY
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
